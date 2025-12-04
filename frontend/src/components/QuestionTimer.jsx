@@ -1,18 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
-function QuestionTimer({ durationSeconds = 60, onExpire, resetKey, onTick }) {
+function QuestionTimer({ durationSeconds = 60, onExpire, resetKey, onTick, stop = false }) {
   const [remaining, setRemaining] = useState(durationSeconds);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     setRemaining(durationSeconds);
   }, [durationSeconds, resetKey]);
 
   useEffect(() => {
+    // Stop timer if stop prop is true
+    if (stop) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
     if (remaining <= 0) {
       onExpire?.();
       return;
     }
-    const id = setInterval(() => {
+    
+    intervalRef.current = setInterval(() => {
       setRemaining((r) => {
         const next = r - 1;
         if (next >= 0 && onTick) {
@@ -21,8 +32,14 @@ function QuestionTimer({ durationSeconds = 60, onExpire, resetKey, onTick }) {
         return next;
       });
     }, 1000);
-    return () => clearInterval(id);
-  }, [remaining, onExpire, onTick]);
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [remaining, onExpire, onTick, stop]);
 
   const progress = (remaining / durationSeconds) * 100;
 

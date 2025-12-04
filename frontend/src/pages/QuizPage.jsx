@@ -16,6 +16,8 @@ function QuizPage() {
   const [coinAnim, setCoinAnim] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const audioCtxRef = useRef(null);
+  const [questionAnim, setQuestionAnim] = useState(true);
+  const [timerStopped, setTimerStopped] = useState(false);
 
   const questions = session.questions || [];
 
@@ -83,6 +85,10 @@ function QuizPage() {
 
   const handleAnswer = (optionText, event) => {
     if (answered) return;
+    
+    // Stop timer and sound immediately
+    setTimerStopped(true);
+    
     const correct = currentQuestion.correctAnswer === optionText;
     const timeTaken = Math.round((Date.now() - startTime) / 1000);
 
@@ -130,6 +136,7 @@ function QuizPage() {
 
   const handleExpire = () => {
     if (answered || !currentQuestion) return;
+    setTimerStopped(true);
     const timeTaken = Math.round((Date.now() - startTime) / 1000);
     setAnswered(true);
     setSelected(null);
@@ -159,11 +166,16 @@ function QuizPage() {
       autoNextTimeoutRef.current = null;
     }
     if (!isLast) {
-      setCurrentIndex((i) => i + 1);
-      setSelected(null);
-      setAnswered(false);
-      setTimerKey((k) => k + 1);
-      setStartTime(Date.now());
+      setQuestionAnim(false);
+      setTimeout(() => {
+        setCurrentIndex((i) => i + 1);
+        setSelected(null);
+        setAnswered(false);
+        setTimerKey((k) => k + 1);
+        setStartTime(Date.now());
+        setQuestionAnim(true);
+        setTimerStopped(false); // Reset timer stopped state
+      }, 300);
     } else {
       navigate("/result");
     }
@@ -217,22 +229,43 @@ function QuizPage() {
         onExpire={handleExpire}
         resetKey={timerKey}
         onTick={handleTimerTick}
+        stop={timerStopped}
       />
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 mb-4 shadow-sm">
-        <div className="text-sm text-slate-300 mb-2">{currentQuestion.question}</div>
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-500 ease-out"
+            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <div
+        className={`rounded-xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 p-6 mb-6 shadow-xl transition-all duration-300 ${
+          questionAnim ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+        }`}
+      >
+        <div className="text-base md:text-lg text-slate-200 mb-2 font-medium leading-relaxed">
+          {currentQuestion.question}
+        </div>
         {currentQuestion.image && (
-          <div className="mt-2 mb-2">
+          <div className="mt-4 mb-2 animate-fade-in">
             <img
               src={currentQuestion.image}
               alt="Question visual"
-              className="max-h-48 rounded-lg object-contain border border-slate-800"
+              className="max-h-48 rounded-lg object-contain border border-slate-800 shadow-lg"
             />
           </div>
         )}
       </div>
 
-      <div className="space-y-2 mb-4">
+      <div
+        className={`space-y-3 mb-6 transition-all duration-300 ${
+          questionAnim ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
+      >
         {currentQuestion.options.map((opt, index) => {
           const isCorrect = opt.text === currentQuestion.correctAnswer;
           const isSelected = selected === opt.text;
@@ -254,20 +287,57 @@ function QuizPage() {
               key={opt.text + index}
               onClick={(e) => handleAnswer(opt.text, e)}
               disabled={answered}
-              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all ${style}`}
+              className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
+                !answered ? "hover:shadow-lg hover:shadow-primary/10 cursor-pointer" : "cursor-not-allowed"
+              } ${style}`}
+              style={{
+                transitionDelay: `${index * 50}ms`,
+              }}
             >
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 text-xs text-slate-400">{String.fromCharCode(65 + index)}.</span>
-                <div>
-                  <div>{opt.text}</div>
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all ${
+                    answered && isCorrect
+                      ? "bg-emerald-500 text-white"
+                      : answered && isSelected && !isCorrect
+                      ? "bg-red-500 text-white"
+                      : answered && !isSelected && isCorrect
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                      : "bg-slate-800 text-slate-400 border border-slate-700"
+                  }`}
+                >
+                  {String.fromCharCode(65 + index)}
+                </div>
+                <div className="flex-1">
+                  <div className="text-slate-200">{opt.text}</div>
                   {opt.image && (
                     <img
                       src={opt.image}
                       alt="Option visual"
-                      className="mt-1 max-h-24 rounded-md border border-slate-800 object-contain"
+                      className="mt-2 max-h-24 rounded-md border border-slate-800 object-contain"
                     />
                   )}
                 </div>
+                {answered && isCorrect && (
+                  <svg
+                    className="w-5 h-5 text-emerald-400 flex-shrink-0 animate-scale-in"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {answered && isSelected && !isCorrect && (
+                  <svg
+                    className="w-5 h-5 text-red-400 flex-shrink-0 animate-scale-in"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
               </div>
             </button>
           );

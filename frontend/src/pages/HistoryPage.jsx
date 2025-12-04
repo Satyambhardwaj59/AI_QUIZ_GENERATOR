@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import client from "../api/client.js";
 
-function ensureUserId() {
+function ensureUserId(user) {
+  if (user?.id) {
+    return user.id;
+  }
   let id = localStorage.getItem("ai_quiz_user_id");
   if (!id) {
     id = `user_${Math.random().toString(36).slice(2, 10)}`;
@@ -11,11 +15,12 @@ function ensureUserId() {
 }
 
 function HistoryPage() {
+  const { user } = useAuth();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = ensureUserId();
+    const userId = ensureUserId(user);
     async function load() {
       try {
         const res = await client.get(`/history/${userId}`);
@@ -27,7 +32,7 @@ function HistoryPage() {
       }
     }
     load();
-  }, []);
+  }, [user]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

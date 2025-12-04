@@ -32,7 +32,7 @@ function SettingsPage() {
         perQuestionStatus: [],
       });
 
-      navigate("/quiz");
+      navigate("/quiz-detail");
     } catch (err) {
       console.error(err);
       setError("Failed to generate quiz. Please try again.");

@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import quizRoutes from "./routes/quizRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 app.use("/api", quizRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (_req, res) => {
   res.json({ status: "ok", message: "AI Quiz API running" });
