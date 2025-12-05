@@ -21,7 +21,8 @@
     "openai": "^4.77.0",
     "pdf-parse": "^1.1.1",
     "tesseract.js": "^5.1.0",
-    "youtube-transcript": "^1.0.7"
+    "youtube-transcript": "^1.0.7",
+    "youtubei.js": "^16.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

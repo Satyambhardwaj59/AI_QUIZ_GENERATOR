@@ -60,14 +60,14 @@ function App() {
                       e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366F1&color=fff&size=128`;
                     }}
                   />
-                  <div className="hidden md:flex flex-col items-start">
+                  {/* <div className="hidden md:flex flex-col items-start">
                     <span className="text-slate-700 dark:text-slate-300 font-medium text-xs">
                       {user.name}
                     </span>
                     <span className="text-slate-500 dark:text-slate-400 text-[10px] capitalize">
                       {user.role}
                     </span>
-                  </div>
+                  </div> */}
                 </Link>
                 <button
                   onClick={logout}

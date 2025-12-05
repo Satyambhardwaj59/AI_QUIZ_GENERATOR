@@ -4,6 +4,7 @@ import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 import Tesseract from "tesseract.js";
 import { YoutubeTranscript } from "youtube-transcript";
+import { Innertube } from "youtubei.js";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
@@ -38,7 +39,9 @@ export async function extractFromFile(file) {
 }
 
 export async function extractFromYoutube(url) {
-  const videoIdMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  const videoIdMatch = url.match(
+  /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+);
   const videoId = videoIdMatch ? videoIdMatch[1] : null;
   if (!videoId) {
     throw new Error("Invalid YouTube URL");
@@ -46,6 +49,7 @@ export async function extractFromYoutube(url) {
   const transcript = await YoutubeTranscript.fetchTranscript(videoId);
   return transcript.map((t) => t.text).join(" ");
 }
+
 
 export async function generateQuizWithAI({ text, difficulty, numQuestions, allowImages }) {
   const clampedNum = Math.max(1, Math.min(20, Number(numQuestions) || 5));
