@@ -10,14 +10,14 @@ function ProfilePage() {
   const [userRank, setUserRank] = useState(null);
   const [quizzesCreated, setQuizzesCreated] = useState(0);
 
-  // useEffect(() => {
-  //   loadProfileData();
-  // }, [user]);
-
   useEffect(() => {
-  if (!user || !user.id) return;
-  loadProfileData();
-}, []);
+    loadProfileData();
+  }, [user]);
+
+//   useEffect(() => {
+//   if (!user || !user.id) return;
+//   loadProfileData();
+// }, [user]);
 
 
   const loadProfileData = async () => {
