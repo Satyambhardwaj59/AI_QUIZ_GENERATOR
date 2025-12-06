@@ -15,6 +15,7 @@ import { useAuth } from "./context/AuthContext.jsx";
 import { useTheme } from "./context/ThemeContext.jsx";
 import AuthModal from "./components/AuthModal.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Footer from "./components/Footer.jsx";
 
 function App() {
   const { user, logout } = useAuth();
@@ -139,6 +140,7 @@ function App() {
           />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
