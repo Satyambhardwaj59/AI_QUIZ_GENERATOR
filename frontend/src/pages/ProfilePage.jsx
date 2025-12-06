@@ -17,7 +17,7 @@ function ProfilePage() {
   useEffect(() => {
   if (!user || !user.id) return;
   loadProfileData();
-}, [user]);
+}, []);
 
 
   const loadProfileData = async () => {
