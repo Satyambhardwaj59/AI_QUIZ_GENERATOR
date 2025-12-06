@@ -65,7 +65,7 @@ function LandingPage() {
             Paste text, upload PDFs or slides, or drop in a YouTube link. Our AI creates timed MCQ
             quizzes with instant feedback and coin rewards to keep learners engaged.
           </p>
-          <div className="flex flex-wrap items-center gap-3 mb-8">
+          <div className="flex flex-wrap items-center justify-around sm:justify-normal sm:gap-5 mb-8">
             <PrimaryButton
               className="px-5 py-2.5 text-sm md:text-base"
               onClick={() => {

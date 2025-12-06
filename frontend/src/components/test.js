@@ -1,29 +1,4 @@
-import { useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
-import LandingPage from "./pages/LandingPage.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
-import QuizDetailPage from "./pages/QuizDetailPage.jsx";
-import CountdownPage from "./pages/CountdownPage.jsx";
-import QuizPage from "./pages/QuizPage.jsx";
-import ResultPage from "./pages/ResultPage.jsx";
-import ReviewQuestionPage from "./pages/ReviewQuestionPage.jsx";
-import HistoryPage from "./pages/HistoryPage.jsx";
-import LeaderboardPage from "./pages/LeaderboardPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import { useAuth } from "./context/AuthContext.jsx";
-import { useTheme } from "./context/ThemeContext.jsx";
-import AuthModal from "./components/AuthModal.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-
-function App() {
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme, isDark } = useTheme();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  
-  return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <header className="border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-slate-950/70 backdrop-blur sticky top-0 z-30 transition-colors duration-300">
+<header className="border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-slate-950/70 backdrop-blur sticky top-0 z-30 transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 rounded-2xl bg-gradient-to-tr from-primary to-emerald-400 flex items-center justify-center text-xs font-bold text-white dark:text-slate-950 shadow-lg shadow-primary/40">
@@ -37,9 +12,9 @@ function App() {
             <Link to="/" className="text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
               Home
             </Link>
-            {/* <Link to="/create" className="text-slate-700 dark:text-slate-300 hover:text-primary transition-colors hidden sm:inline-flex">
+            <Link to="/create" className="text-slate-700 dark:text-slate-300 hover:text-primary transition-colors hidden sm:inline-flex">
               Create quiz
-            </Link> */}
+            </Link>
             <Link to="/history" className="text-slate-700 dark:text-slate-300 hover:text-primary transition-colors">
               History
             </Link>
@@ -69,12 +44,12 @@ function App() {
                     </span>
                   </div> */}
                 </Link>
-                {/* <button
+                <button
                   onClick={logout}
                   className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 text-xs"
                 >
                   Logout
-                </button> */}
+                </button>
               </div>
             ) : (
               <button
@@ -102,48 +77,3 @@ function App() {
           </nav>
         </div>
       </header>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route
-            path="/create"
-            element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/quiz-detail" element={<QuizDetailPage />} />
-          <Route path="/countdown" element={<CountdownPage />} />
-          <Route path="/quiz" element={<QuizPage />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/review" element={<ReviewQuestionPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
-export default App;
-
-
-

@@ -4,7 +4,7 @@ import client from "../api/client.js";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
 function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState(null);
@@ -14,20 +14,14 @@ function ProfilePage() {
     loadProfileData();
   }, [user]);
 
-//   useEffect(() => {
-//   if (!user || !user.id) return;
-//   loadProfileData();
-// }, [user]);
-
-
   const loadProfileData = async () => {
     try {
       setLoading(true);
-      
+
       // Get user's results
       const resultsRes = await client.get(`/history/${user.id}`);
       const results = resultsRes.data.results || [];
-      
+
       // Calculate stats
       const totalScore = results.reduce((sum, r) => sum + r.score, 0);
       const totalCoins = results.reduce((sum, r) => sum + r.coinsEarned, 0);
@@ -83,13 +77,20 @@ function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">
-          My Profile
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">View your profile and statistics</p>
+      <div className="flex items-center justify-between mb-2 sm:mb-6">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">
+            My Profile
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm">View your profile and statistics</p>
+        </div>
+        <button
+          onClick={logout}
+          className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 text-xs"
+        >
+          Logout
+        </button>
       </div>
-
       {/* Profile Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 p-6 md:p-8 mb-6 shadow-xl">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
