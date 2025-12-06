@@ -70,7 +70,7 @@ function LandingPage() {
               className="px-5 py-2.5 text-sm md:text-base"
               onClick={() => {
                 if (!isAuthenticated) {
-                  navigate("/login");
+                  alert("Please login to create a quiz!");
                   return;
                 }
                 navigate("/create")
