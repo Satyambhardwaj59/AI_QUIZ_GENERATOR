@@ -44,7 +44,20 @@ router.post("/upload", upload.single("file"), async (req, res) => {
      return res.status(400).json({ error: "No file uploaded" });
    }
    filePath = req.file.path;
+  
+   // Validate file exists
+   if (!fs.existsSync(filePath)) {
+     return res.status(400).json({ error: "Uploaded file not found" });
+   }
+  
    const text = await extractFromFile(req.file);
+  
+   // Validate extracted text
+   if (!text || text.trim().length === 0) {
+     return res.status(400).json({
+       error: "No text could be extracted from the file. Please ensure the file contains readable text."
+     });
+   }
   
    // Clean up uploaded file after processing
    if (filePath && fs.existsSync(filePath)) {
@@ -68,9 +81,16 @@ router.post("/upload", upload.single("file"), async (req, res) => {
      }
    }
   
+   // Provide more specific error messages
+   const errorMessage = err.message || "Failed to extract text from file";
+   const isDevelopment = process.env.NODE_ENV === "development";
+  
    res.status(500).json({
-     error: "Failed to extract text from file",
-     details: process.env.NODE_ENV === "development" ? err.message : undefined
+     error: errorMessage.includes("No text")
+       ? errorMessage
+       : "Failed to extract text from file. Please ensure the file format is supported and contains readable content.",
+     details: isDevelopment ? err.message : undefined,
+     stack: isDevelopment ? err.stack : undefined
    });
  }
 });
@@ -94,9 +114,14 @@ router.post("/generate-quiz", async (req, res) => {
    }
 
 
-   if (!baseText || baseText.trim().length === 0) {
+   // Allow minimum 1 character (single word) for quiz generation
+   const trimmedText = baseText.trim();
+   if (!trimmedText || trimmedText.length === 0) {
      return res.status(400).json({ error: "No text available for quiz generation" });
    }
+  
+   // Normalize text - ensure it's not just whitespace
+   baseText = trimmedText;
 
 
    const questions = await generateQuizWithAI({
@@ -394,4 +419,3 @@ router.get("/quiz/:id", async (req, res) => {
 
 
 export default router;
-
