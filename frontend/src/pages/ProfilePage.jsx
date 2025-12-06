@@ -190,7 +190,7 @@ function ProfilePage() {
               <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">Your Rank</div>
               <div className="text-4xl font-bold text-primary flex items-center gap-3">
                 {getRankIcon(userRank)}
-                <span>{userRank}</span>
+                {/* <span>{userRank}</span> */}
               </div>
             </div>
             <div className="text-right">
