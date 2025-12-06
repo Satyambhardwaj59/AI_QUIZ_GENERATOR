@@ -7,32 +7,63 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // useEffect(() => {
+  //   // Check if user is logged in from localStorage
+  //   const savedUser = localStorage.getItem("ai_quiz_user");
+  //   if (savedUser) {
+  //     try {
+  //       const parsedUser = JSON.parse(savedUser);
+  //       setUser(parsedUser);
+  //       // Verify user still exists
+  //       if (parsedUser.id) {
+  //         client
+  //           .get(`/auth/user/${parsedUser.id}`)
+  //           .then((res) => {
+  //             setUser(res.data.user);
+  //             localStorage.setItem("ai_quiz_user", JSON.stringify(res.data.user));
+  //           })
+  //           .catch(() => {
+  //             // User might not exist anymore
+  //             logout();
+  //           });
+  //       }
+  //     } catch (e) {
+  //       localStorage.removeItem("ai_quiz_user");
+  //     }
+  //   }
+  //   setIsLoading(false);
+  // }, []);
+
   useEffect(() => {
-    // Check if user is logged in from localStorage
+  const restoreUser = async () => {
     const savedUser = localStorage.getItem("ai_quiz_user");
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        // Verify user still exists
-        if (parsedUser.id) {
-          client
-            .get(`/auth/user/${parsedUser.id}`)
-            .then((res) => {
-              setUser(res.data.user);
-              localStorage.setItem("ai_quiz_user", JSON.stringify(res.data.user));
-            })
-            .catch(() => {
-              // User might not exist anymore
-              logout();
-            });
-        }
-      } catch (e) {
-        localStorage.removeItem("ai_quiz_user");
-      }
+
+    if (!savedUser) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
-  }, []);
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser); // Restore instantly
+
+      // Verify from backend
+      if (parsedUser.id) {
+        const res = await client.get(`/auth/user/${parsedUser.id}`);
+        setUser(res.data.user);
+        localStorage.setItem("ai_quiz_user", JSON.stringify(res.data.user));
+      }
+    } catch (err) {
+      localStorage.removeItem("ai_quiz_user");
+      setUser(null);
+    } finally {
+      setIsLoading(false); // FINALLY → important
+    }
+  };
+
+  restoreUser();
+}, []);
+
 
   const signup = async (userData) => {
     try {
