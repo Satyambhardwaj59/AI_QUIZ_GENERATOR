@@ -12,16 +12,19 @@ import {
 } from "youtube-transcript";
 import { Innertube } from "youtubei.js";
 import axios from "axios";
-import OpenAI from "openai";
+// import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 
 
 dotenv.config();
 
 
-const openai = new OpenAI({
- apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//  apiKey: process.env.OPENAI_API_KEY,
+// });
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
 export async function extractFromFile(file) {
@@ -549,9 +552,11 @@ Return pure JSON, no markdown, no comments, matching the JSON schema described.
  }
 
 
- let response;
+ let responseContent = "{}";
  try {
-   response = await openai.chat.completions.create({
+   /*
+   // OpenAI Implementation (Commented out)
+   let response = await openai.chat.completions.create({
      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
      messages: [
        { role: "system", content: systemPrompt },
@@ -560,9 +565,27 @@ Return pure JSON, no markdown, no comments, matching the JSON schema described.
      temperature: 0.3,
      response_format: { type: "json_object" },
    });
+   responseContent = response.choices[0]?.message?.content || "{}";
+   */
+
+   // Gemini Implementation
+   const model = genAI.getGenerativeModel({ 
+     model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+     systemInstruction: systemPrompt 
+   });
+
+   const result = await model.generateContent({
+     contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+     generationConfig: {
+       temperature: 0.3,
+       responseMimeType: "application/json",
+     }
+   });
+
+   responseContent = result.response.text() || "{}";
  } catch (err) {
    // Surface quota / rate-limit errors in a friendlier way to the route handler
-   if (err?.status === 429 || err?.code === "insufficient_quota") {
+   if (err?.status === 429 || err?.code === "insufficient_quota" || (err?.message && err.message.toLowerCase().includes("quota"))) {
      const wrapped = new Error("AI_QUOTA_EXCEEDED");
      wrapped.status = 429;
      wrapped.originalMessage =
@@ -573,7 +596,7 @@ Return pure JSON, no markdown, no comments, matching the JSON schema described.
  }
 
 
- const content = response.choices[0]?.message?.content || "{}";
+ const content = responseContent;
 
 
  let parsed = {};
