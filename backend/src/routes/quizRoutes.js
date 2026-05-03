@@ -406,7 +406,7 @@ router.get("/recent-quizzes", async (req, res) => {
 
 router.get("/quiz/:id", async (req, res) => {
  try {
-   const quiz = await Quiz.findById(req.params.id).select("-aiResponse").lean();
+   const quiz = await Quiz.findById(req.params.id).lean();
    if (!quiz) {
      return res.status(404).json({ error: "Quiz not found" });
    }

@@ -3,16 +3,19 @@ import { useNavigate } from "react-router-dom";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 import client from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useQuiz } from "../context/QuizContext.jsx";
 
 function LandingPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { setSession, setSettings } = useQuiz();
   const [recentQuizzes, setRecentQuizzes] = useState([]);
   const [loadingQuizzes, setLoadingQuizzes] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalQuizzes, setTotalQuizzes] = useState(0);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [loadingPlay, setLoadingPlay] = useState(false);
   const itemsPerPage = 6;
 
   useEffect(() => {
@@ -30,6 +33,42 @@ function LandingPage() {
       console.error(err);
     } finally {
       setLoadingQuizzes(false);
+    }
+  };
+
+  const handlePlayQuiz = async (quiz) => {
+    if (!isAuthenticated) {
+      alert("Please login to play a quiz!");
+      return;
+    }
+    try {
+      setLoadingPlay(true);
+      const res = await client.get(`/quiz/${quiz._id}`);
+      const fullQuiz = res.data.quiz;
+      const questions = fullQuiz.aiResponse || [];
+
+      // Populate QuizContext with the existing quiz data
+      setSettings({
+        difficulty: fullQuiz.difficulty,
+        numQuestions: fullQuiz.numQuestions,
+        allowImages: true,
+      });
+      setSession({
+        quizId: fullQuiz._id,
+        questions,
+        answers: [],
+        score: 0,
+        coins: 0,
+        perQuestionStatus: [],
+      });
+
+      setSelectedQuiz(null);
+      navigate("/quiz-detail");
+    } catch (err) {
+      console.error("Failed to load quiz:", err);
+      alert("Failed to load quiz. Please try again.");
+    } finally {
+      setLoadingPlay(false);
     }
   };
 
@@ -344,19 +383,39 @@ function LandingPage() {
               </div>
 
               {isAuthenticated ? (
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <PrimaryButton
+                    onClick={() => handlePlayQuiz(selectedQuiz)}
+                    className="flex-1 flex items-center justify-center gap-2"
+                    disabled={loadingPlay}
+                  >
+                    {loadingPlay ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Play Quiz
+                      </>
+                    )}
+                  </PrimaryButton>
+                  <button
                     onClick={() => {
                       setSelectedQuiz(null);
                       navigate("/create");
                     }}
-                    className="flex-1"
+                    className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 text-sm"
                   >
-                    Create Similar Quiz
-                  </PrimaryButton>
+                    Create Similar
+                  </button>
                   <button
                     onClick={() => setSelectedQuiz(null)}
-                    className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300"
+                    className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 text-sm"
                   >
                     Close
                   </button>
